@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  MASTER
+  ADMIN
+  DEVELOPER
+  USER
+}
+
+enum Status {
+  QUEUED
+  SENDING
+  SENT
+  ERROR
+}
+
+enum LogType {
+  EMAIL_SENT
+  EMAIL_ERROR
+  TEMPLATE_CHANGE
+  USER_CHANGE
+  PROJECT_CHANGE
+  CLIENT_CHANGE
+  PLAN_CHANGE
+}
+
+model User {
+  id             String           @id @default(uuid())
+  createdAt      DateTime         @default(now())
+  name           String
+  email          String           @unique
+  password       String
+  isActive       Boolean
+  role           Role
+  clientId       String?
+  client         Client?           @relation(fields: [clientId], references: [id])
+  UserPermission UserPermission[]
+}
+
+model Client {
+  id       String    @id @default(uuid())
+  name     String
+  users    User[]
+  projects Project[]
+  subscriptions Subscription[]
+}
+
+model Plan {
+  id       String  @id @default(uuid())
+  name     String
+  price    Float
+  features String // You might want to represent this differently
+  isActive Boolean
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id        String  @id @default(uuid())
+  planId    String
+  plan      Plan    @relation(fields: [planId], references: [id])
+  clientId  String
+  client    Client  @relation(fields: [clientId], references: [id])
+  isActive  Boolean
+  startDate DateTime
+  endDate   DateTime
+}
+
+model Project {
+  id                   String           @id @default(uuid())
+  name                 String
+  isActive             Boolean
+  encryptionKey        String
+  apiKey               String
+  useCustomEmailServer Boolean
+  clientId             String
+  client               Client           @relation(fields: [clientId], references: [id])
+  emailTemplates       EmailTemplate[]
+  UserPermission       UserPermission[]
+}
+
+model UserPermission {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  // User can have access to all projects or just a few
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+}
+
+model EmailTemplate {
+  id                 String              @id @default(uuid())
+  projectId          String
+  project            Project             @relation(fields: [projectId], references: [id])
+  templateName       String
+  templateVariations TemplateVariation[]
+}
+
+model TemplateVariation {
+  id              String        @id @default(uuid())
+  emailTemplateId String
+  emailTemplate   EmailTemplate @relation(fields: [emailTemplateId], references: [id])
+  variationName   String
+}
+
+model Email {
+  id          String       @id @default(uuid())
+  fromAddress String
+  toAddresses String
+  ccAddresses String
+  sentAt      DateTime
+  success     Boolean
+  error       String?
+  EmailQueue  EmailQueue[]
+}
+
+model EmailQueue {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  priority  Int
+  emailId   String
+  email     Email    @relation(fields: [emailId], references: [id])
+  status    Status
+}
+
+model Log {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  message   String
+  type      LogType
+}

@@ -1,0 +1,51 @@
+version: "3.8"
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: mydb
+    volumes:
+      - ./docker-volume/db:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  redis:
+    image: redis
+    restart: always
+    volumes:
+      - ./docker-volume/redis:/data
+    networks:
+      - app-network
+
+  keycloak:
+    image: jboss/keycloak
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+      - redis
+    environment:
+      DATABASE_URL: postgres://admin:admin@db:5432/mydb
+      REDIS_URL: redis://redis:6379
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

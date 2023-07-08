@@ -1,0 +1,71 @@
+version: "3.8"
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker-volume/db:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  redis:
+    image: redis
+    restart: always
+    volumes:
+      - ./docker-volume/redis:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  keycloak:
+    image: jboss/keycloak
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+      - redis
+    networks:
+      - app-network
+
+  prisma_studio:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5555:5555" # Expose port for Prisma Studio
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+      - redis
+      - app
+    command: ["npx", "prisma", "studio", "--port", "5555"]
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
