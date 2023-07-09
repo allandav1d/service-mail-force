@@ -24,47 +24,35 @@ services:
     networks:
       - app-network
 
-  keycloak:
-    image: jboss/keycloak
-    environment:
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: admin
-    ports:
-      - "8080:8080"
-    networks:
-      - app-network
+  # app:
+  #   build: 
+  #     context: .
+  #     dockerfile: Dockerfile.dev
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - .:/app
+  #   depends_on:
+  #     - db
+  #     - redis
+  #   networks:
+  #     - app-network
 
-  app:
-    build: 
-      context: .
-      dockerfile: Dockerfile.dev
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/app
-      - /app/node_modules
-    depends_on:
-      - db
-      - redis
-    networks:
-      - app-network
-
-  prisma_studio:
-    build: 
-      context: .
-      dockerfile: Dockerfile.dev
-    ports:
-      - "5555:5555" # Expose port for Prisma Studio
-    volumes:
-      - .:/app
-      - /app/node_modules
-    depends_on:
-      - db
-      - redis
-      - app
-    command: ["npx", "prisma", "studio", "--port", "5555"]
-    networks:
-      - app-network
+  # prisma_studio:
+  #   build: 
+  #     context: .
+  #     dockerfile: Dockerfile.dev
+  #   ports:
+  #     - "5555:5555" # Expose port for Prisma Studio
+  #   volumes:
+  #     - .:/app
+  #   depends_on:
+  #     - db
+  #     - redis
+  #     - app
+  #   command: ["npx", "prisma", "studio", "--port", "5555"]
+  #   networks:
+  #     - app-network
 
 networks:
   app-network:

@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { PrismaModule } from './prisma/prisma.module';
-import { UsersModule } from './users/users.module';
 import { AdminJSModule } from './AdminJS/AdminJS.module';
 import { ConfigModule } from './config/config.module';
 import { KeycloakConnectModule } from 'nest-keycloak-connect';
+import { Resources } from './resources/resources';
 
 @Module({
   imports: [
@@ -18,8 +18,8 @@ import { KeycloakConnectModule } from 'nest-keycloak-connect';
     }),
     ConfigModule,
     PrismaModule,
-    UsersModule,
-    AdminJSModule, 
+    ...Resources,
+    AdminJSModule
   ],
   controllers: [AppController], 
   providers: [

@@ -36,43 +36,51 @@ enum LogType {
 
 model User {
   id             String           @id @default(uuid())
-  createdAt      DateTime         @default(now())
   name           String
   email          String           @unique
   password       String
   isActive       Boolean
   role           Role
   clientId       String?
-  client         Client?           @relation(fields: [clientId], references: [id])
+  client         Client?          @relation(fields: [clientId], references: [id])
   UserPermission UserPermission[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 }
 
 model Client {
-  id       String    @id @default(uuid())
-  name     String
-  users    User[]
-  projects Project[]
+  id            String         @id @default(uuid())
+  name          String
+  users         User[]
+  projects      Project[]
   subscriptions Subscription[]
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 model Plan {
-  id       String  @id @default(uuid())
-  name     String
-  price    Float
-  features String // You might want to represent this differently
-  isActive Boolean
+  id            String         @id @default(uuid())
+  name          String
+  price         Float
+  features      String // You might want to represent this differently
+  isActive      Boolean
   subscriptions Subscription[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 model Subscription {
-  id        String  @id @default(uuid())
+  id        String   @id @default(uuid())
   planId    String
-  plan      Plan    @relation(fields: [planId], references: [id])
+  plan      Plan     @relation(fields: [planId], references: [id])
   clientId  String
-  client    Client  @relation(fields: [clientId], references: [id])
+  client    Client   @relation(fields: [clientId], references: [id])
   isActive  Boolean
   startDate DateTime
   endDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Project {
@@ -84,8 +92,10 @@ model Project {
   useCustomEmailServer Boolean
   clientId             String
   client               Client           @relation(fields: [clientId], references: [id])
-  emailTemplates       EmailTemplate[]
+  templates            Template[]
   UserPermission       UserPermission[]
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
 }
 
 model UserPermission {
@@ -95,21 +105,27 @@ model UserPermission {
   // User can have access to all projects or just a few
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model EmailTemplate {
+model Template {
   id                 String              @id @default(uuid())
   projectId          String
   project            Project             @relation(fields: [projectId], references: [id])
   templateName       String
   templateVariations TemplateVariation[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 }
 
 model TemplateVariation {
-  id              String        @id @default(uuid())
-  emailTemplateId String
-  emailTemplate   EmailTemplate @relation(fields: [emailTemplateId], references: [id])
-  variationName   String
+  id            String   @id @default(uuid())
+  templateId    String
+  template      Template @relation(fields: [templateId], references: [id])
+  variationName String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Email {
@@ -121,20 +137,24 @@ model Email {
   success     Boolean
   error       String?
   EmailQueue  EmailQueue[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 model EmailQueue {
   id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
   priority  Int
   emailId   String
   email     Email    @relation(fields: [emailId], references: [id])
   status    Status
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Log {
   id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
   message   String
   type      LogType
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

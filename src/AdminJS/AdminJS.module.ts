@@ -3,6 +3,8 @@ import { DMMFClass } from '@prisma/client/runtime';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import branding from './utils/branding';
+import RouterBuilder from './pages/routes';
+import { ClientTraslate } from './pages/Clients';
 
 @Module({
   imports: [
@@ -30,21 +32,6 @@ import branding from './utils/branding';
               throw new Error('Prisma DMMF not found')
             }
     
-            const resources = [
-              {
-                resource: { model: dmmf.modelMap.User, client: prisma},
-                options: {
-                  id: 'User',
-                  href: '/app/resources/User',
-                  alias: 'Usuários',
-                  navigation:{
-                    name: null,
-                    icon: 'User',
-                  }
-                }
-              }
-            ]
-    
             return {
               auth: {
                 authenticate: async (email, password) => {
@@ -52,6 +39,7 @@ import branding from './utils/branding';
                     where: { email },
                   })
                   
+                  console.log('user', user)
                   if (user && user.password === password) {
                     return user
                   }
@@ -65,18 +53,17 @@ import branding from './utils/branding';
                 rootPath: '/app',
                 loginPath: '/app/login',
                 logoutPath: '/app/logout',
-                pages: {
-                  login: {
-                  
-                  },
-                  logout: {
-                    label: 'Sair',
-                  },
-                },
-
-                resources,
-                defaultTheme: dark.id,
+                resources: RouterBuilder({ dmmf, prisma }),
+                // defaultTheme: light.id,
                 availableThemes: [dark, light, noSidebar],
+                pages: {
+                  docs: {
+                    label: 'Documentação',
+                    path: '/docs',
+                    component: '<></>',
+
+                  }
+                },
                 settings: {
                   defaultPerPage: 10,
                 },
@@ -86,9 +73,18 @@ import branding from './utils/branding';
                   translations: {
                     'pt-BR': {
                       labels: {
-                        User: 'Usuário',
-                        Users: 'Usuários',
+                        User: 'Usuários',
+                        Client: 'Clientes',
+                        Plan: 'Planos',
+                        Project: 'Projetos',
+                        Subscription: 'Assinaturas',
+                        Template: 'Modelos',
+                        Email: 'E-mails',
+                        EmailQueue: 'Fila de E-mails',
                       },
+                      resources: {
+                        Client: ClientTraslate,
+                      }
                     }
                   }
                 },
